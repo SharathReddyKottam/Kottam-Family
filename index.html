@@ -128,15 +128,15 @@ function branch(p){
   if (kids.length){ const ul = document.createElement("ul"); kids.forEach(k=>ul.append(branch(k))); li.append(ul); }
   return li;
 }
-const seen = new Set(), top = document.createElement("ul");
+const seen = new Set(), rootList = document.createElement("ul");
 people.forEach(p=>{
   if ((p.parents||[]).length || seen.has(p.id)) return;
   const s = byId[p.spouse];
   if (s && (s.parents||[]).length) return;
   seen.add(p.id); if (s) seen.add(s.id);
-  top.append(branch(p));
+  rootList.append(branch(p));
 });
-$("#tree").append(top);
+$("#tree").append(rootList);
 
 const chip = id => byId[id] ? `<span class="chip" onclick="showPerson('${id}')">${label(byId[id])}</span>` : "";
 function showPerson(id){
