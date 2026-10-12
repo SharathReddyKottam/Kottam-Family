@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kottam Family</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#fbfaf8;--ink:#1c1b19;--muted:#9a958c;--line:#dcd8d0;--card:#ffffff;--accent:#1c1b19}
+  @media (prefers-color-scheme:dark){:root{--bg:#121211;--ink:#ecebe7;--muted:#7d7a73;--line:#34332f;--card:#1a1a18;--accent:#ecebe7}}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+
+  header{text-align:center;padding:80px 16px 20px}
+  .eyebrow{font-size:.68rem;letter-spacing:.4em;text-transform:uppercase;color:var(--muted)}
+  h1{font-family:Fraunces,serif;font-weight:300;font-size:clamp(2.6rem,7vw,4.4rem);margin:14px 0 0;letter-spacing:-.01em}
+  .dot{width:4px;height:4px;border-radius:50%;background:var(--muted);margin:28px auto 0}
+  .search{margin:36px auto 0;width:min(280px,100%)}
+  .search input{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);
+    font:300 .95rem Inter;padding:10px 2px;text-align:center;outline:none;transition:border-color .2s}
+  .search input:focus{border-color:var(--ink)}
+  .search input::placeholder{color:var(--muted)}
+
+  /* tree */
+  .wrap{overflow-x:auto;padding:60px 16px 100px}
+  .tree{display:flex;justify-content:center;min-width:max-content}
+  .tree ul{display:flex;justify-content:center;position:relative;margin:0;padding:36px 0 0}
+  .tree>ul{padding:0}
+  .tree li{list-style:none;position:relative;padding:36px 14px 0;text-align:center}
+  .tree>ul>li{padding-top:0}
+  .tree li::before,.tree li::after{content:"";position:absolute;top:0;right:50%;width:50%;height:36px;border-top:1px solid var(--line)}
+  .tree li::after{right:auto;left:50%;border-left:1px solid var(--line)}
+  .tree li:first-child::before,.tree li:last-child::after{border:0}
+  .tree li:last-child::before{border-right:1px solid var(--line)}
+  .tree li:only-child::after{display:none}
+  .tree li:only-child::before{border:0;border-left:1px solid var(--line);left:50%;right:auto;width:0}
+  .tree>ul>li::before,.tree>ul>li::after{display:none}
+  .tree ul ul::before{content:"";position:absolute;top:0;left:50%;height:36px;border-left:1px solid var(--line)}
+
+  .couple{display:inline-flex;align-items:center}
+  .tie{width:28px;height:1px;background:var(--line)}
+
+  .person{width:170px;padding:22px 14px;background:var(--card);border:1px solid var(--line);border-radius:2px;
+    cursor:pointer;transition:border-color .25s, transform .25s;animation:fade .8s ease both}
+  .person:hover{border-color:var(--ink);transform:translateY(-2px)}
+  .nick{font-family:Fraunces,serif;font-weight:400;font-size:1.35rem;line-height:1.1}
+  .name{font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.45;letter-spacing:.02em}
+  .person.hit{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+  .person.dim{opacity:.25}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+
+  /* profile */
+  .veil{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s}
+  .veil.open{opacity:1;pointer-events:auto}
+  .panel{width:min(400px,100%);background:var(--card);border:1px solid var(--line);padding:48px 32px 36px;text-align:center;position:relative}
+  .panel .nick{font-size:2.2rem}
+  .panel .full{font-size:.85rem;color:var(--muted);margin-top:10px;line-height:1.5}
+  .panel .meta{font-size:.78rem;color:var(--muted);margin-top:6px}
+  .panel .story{font-family:Fraunces,serif;font-weight:300;font-style:italic;font-size:1.1rem;line-height:1.6;margin:24px 0 0}
+  .rels{margin-top:28px;border-top:1px solid var(--line);padding-top:20px;display:grid;gap:12px;font-size:.85rem}
+  .rels .k{font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .chip{display:inline-block;margin:2px 6px;cursor:pointer;border-bottom:1px solid var(--line);padding-bottom:1px}
+  .chip:hover{border-color:var(--ink)}
+  .x{position:absolute;top:12px;right:14px;border:0;background:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
+
+  footer{text-align:center;font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);padding:0 16px 50px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Family Tree</div>
+  <h1 id="title"></h1>
+  <div class="dot"></div>
+  <div class="search"><input id="q" placeholder="Search a name" autocomplete="off"></div>
+</header>
+
+<div class="wrap"><div class="tree" id="tree"></div></div>
+<footer id="foot"></footer>
+<div class="veil" id="veil"><div class="panel" id="panel"></div></div>
+
+<script>
+/* ============================================================
+   YOUR FAMILY DATA — edit only this section.
+   nick: what you call them (shown big). aka: other name.
+   living:true hides dates & birthplace.
+   ============================================================ */
+const FAMILY_NAME = "Kottam";
+const TAGLINE     = "";
+
+const people = [
+  { id:"tathaya", name:"Kottam Raghupathi Reddy", nick:"Tathaya", spouse:"nannamma", living:true },
+  { id:"nannamma", name:"Kottam Rathnavathi Reddy", nick:"Nannamma", spouse:"tathaya", living:true },
+  { id:"nanna", name:"Kottam Venkata Rama Krishna Reddy", nick:"Nanna", parents:["tathaya","nannamma"], spouse:"maa", living:true },
+  { id:"maa", name:"Kottam Yamuna Reddy", aka:"Kottam Aruna Reddy", nick:"Maa", spouse:"nanna", living:true },
+  { id:"me", name:"Kottam Sharath", nick:"Me", parents:["nanna","maa"], living:true },
+  { id:"chelli", name:"Kottam Siri Chandana Reddy", nick:"Chelli", parents:["nanna","maa"], living:true },
+];
+/* ===================== end of data ===================== */
+
+const byId = Object.fromEntries(people.map(p=>[p.id,p]));
+const $ = s=>document.querySelector(s);
+$("#title").textContent = FAMILY_NAME; document.title = FAMILY_NAME + " Family";
+$("#foot").textContent = `${people.length} members`;
+
+const label = p => p.nick || p.name;
+const dates = p => p.living ? "" : (p.born||p.died) ? `${p.born||"?"} – ${p.died||""}` : "";
+const kidsOf = p => people.filter(c=>(c.parents||[]).some(x=>x===p.id||x===p.spouse));
+
+let delay = 0;
+function card(p){
+  const d = document.createElement("div");
+  d.className = "person"; d.dataset.id = p.id; d.style.animationDelay = (delay += 80) + "ms";
+  d.innerHTML = `<div class="nick">${label(p)}</div>${p.nick ? `<div class="name">${p.name}</div>` : ""}`;
+  d.onclick = () => showPerson(p.id);
+  return d;
+}
+function branch(p){
+  const li = document.createElement("li");
+  const c = document.createElement("div"); c.className = "couple"; c.append(card(p));
+  const s = byId[p.spouse];
+  if (s){ const t = document.createElement("span"); t.className = "tie"; c.append(t, card(s)); }
+  li.append(c);
+  const kids = kidsOf(p);
+  if (kids.length){ const ul = document.createElement("ul"); kids.forEach(k=>ul.append(branch(k))); li.append(ul); }
+  return li;
+}
+const seen = new Set(), top = document.createElement("ul");
+people.forEach(p=>{
+  if ((p.parents||[]).length || seen.has(p.id)) return;
+  const s = byId[p.spouse];
+  if (s && (s.parents||[]).length) return;
+  seen.add(p.id); if (s) seen.add(s.id);
+  top.append(branch(p));
+});
+$("#tree").append(top);
+
+const chip = id => byId[id] ? `<span class="chip" onclick="showPerson('${id}')">${label(byId[id])}</span>` : "";
+function showPerson(id){
+  const p = byId[id], kids = kidsOf(p);
+  const meta = [dates(p), !p.living && p.place].filter(Boolean).join(" · ");
+  const rel = (k,v) => v ? `<div><div class="k">${k}</div>${v}</div>` : "";
+  $("#panel").innerHTML = `
+    <button class="x" onclick="shut()">×</button>
+    <div class="nick">${label(p)}</div>
+    <div class="full">${p.name}${p.aka ? `<br>also known as ${p.aka}` : ""}</div>
+    ${meta ? `<div class="meta">${meta}</div>` : ""}
+    ${p.story ? `<p class="story">${p.story}</p>` : ""}
+    <div class="rels">
+      ${rel("Parents", (p.parents||[]).map(chip).join(""))}
+      ${rel("Spouse", byId[p.spouse] ? chip(p.spouse) : "")}
+      ${rel("Children", kids.map(k=>chip(k.id)).join(""))}
+    </div>`;
+  $("#veil").classList.add("open");
+}
+function shut(){ $("#veil").classList.remove("open"); }
+$("#veil").onclick = e => { if (e.target.id==="veil") shut(); };
+addEventListener("keydown", e => { if (e.key==="Escape") shut(); });
+
+$("#q").oninput = e => {
+  const q = e.target.value.trim().toLowerCase(); let first;
+  document.querySelectorAll(".person").forEach(el=>{
+    const p = byId[el.dataset.id];
+    const hit = q && [p.name,p.nick,p.aka].filter(Boolean).join(" ").toLowerCase().includes(q);
+    el.classList.toggle("hit", !!hit); el.classList.toggle("dim", !!q && !hit);
+    if (hit && !first) first = el;
+  });
+  first?.scrollIntoView({behavior:"smooth",block:"center",inline:"center"});
+};
+</script>
+</body>
+</html>
