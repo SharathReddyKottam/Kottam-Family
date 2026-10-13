@@ -5,171 +5,399 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kottam Family</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=Fraunces:ital,opsz,wght@1,9..144,400&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#fbfaf8;--ink:#1c1b19;--muted:#9a958c;--line:#dcd8d0;--card:#ffffff;--accent:#1c1b19}
-  @media (prefers-color-scheme:dark){:root{--bg:#121211;--ink:#ecebe7;--muted:#7d7a73;--line:#34332f;--card:#1a1a18;--accent:#ecebe7}}
+  :root{
+    --bg:#f4efe6; --dot:#e2d9c8; --ink:#25221d; --muted:#8b8272; --card:#fffdf9; --line:#d3c8b3; --gold:#b08a4a;
+    --shadow:0 8px 20px -10px rgba(60,40,10,.35);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#14120f; --dot:#25221c; --ink:#f0eadd; --muted:#948b7a; --card:#201d19; --line:#443e33; --gold:#d8b46e;
+      --shadow:0 8px 20px -10px rgba(0,0,0,.8); }
+  }
   *{box-sizing:border-box}
-  html,body{margin:0}
-  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+  html,body{height:100%;margin:0}
+  body{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);color:var(--ink);
+       font-family:"Bricolage Grotesque",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 
-  header{text-align:center;padding:80px 16px 20px}
-  .eyebrow{font-size:.68rem;letter-spacing:.4em;text-transform:uppercase;color:var(--muted)}
-  h1{font-family:Fraunces,serif;font-weight:300;font-size:clamp(2.6rem,7vw,4.4rem);margin:14px 0 0;letter-spacing:-.01em}
-  .dot{width:4px;height:4px;border-radius:50%;background:var(--muted);margin:28px auto 0}
-  .search{margin:36px auto 0;width:min(280px,100%)}
-  .search input{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);
-    font:300 .95rem Inter;padding:10px 2px;text-align:center;outline:none;transition:border-color .2s}
-  .search input:focus{border-color:var(--ink)}
-  .search input::placeholder{color:var(--muted)}
+  /* ---------- header ---------- */
+  header{flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+         padding:18px 28px;position:relative;z-index:5}
+  .brand{display:flex;align-items:center;gap:14px}
+  .mark{width:44px;height:44px;color:var(--gold);flex:none}
+  h1{font-family:Fraunces,Georgia,serif;font-style:italic;font-weight:400;font-size:clamp(2rem,4.5vw,2.8rem);margin:0;line-height:1}
+  .sub{font-size:.68rem;letter-spacing:.32em;text-transform:uppercase;color:var(--muted);margin-top:7px}
+  .search{position:relative;width:min(330px,100%)}
+  .search input{width:100%;padding:12px 18px 12px 44px;border:1.5px solid var(--line);border-radius:999px;background:var(--card);
+    color:var(--ink);font:inherit;font-size:.95rem;outline:none;box-shadow:var(--shadow)}
+  .search input:focus{border-color:var(--gold)}
+  .search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .results{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--card);border:1.5px solid var(--line);
+    border-radius:18px;box-shadow:var(--shadow);overflow:hidden;display:none}
+  .results.open{display:block}
+  .results button{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px;border:0;background:none;color:var(--ink);
+    font:inherit;font-size:.9rem;text-align:left;cursor:pointer}
+  .results button:hover,.results button.on{background:color-mix(in srgb,var(--gold) 14%,transparent)}
+  .results .none{padding:12px 16px;color:var(--muted);font-size:.9rem}
+  .results .av{flex:none;width:32px;height:32px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-weight:600;font-size:.85rem}
 
-  /* tree */
-  .wrap{overflow-x:auto;padding:60px 16px 100px}
-  .tree{display:flex;justify-content:center;min-width:max-content}
-  .tree ul{display:flex;justify-content:center;position:relative;margin:0;padding:36px 0 0}
-  .tree>ul{padding:0}
-  .tree li{list-style:none;position:relative;padding:36px 14px 0;text-align:center}
-  .tree>ul>li{padding-top:0}
-  .tree li::before,.tree li::after{content:"";position:absolute;top:0;right:50%;width:50%;height:36px;border-top:1px solid var(--line)}
-  .tree li::after{right:auto;left:50%;border-left:1px solid var(--line)}
-  .tree li:first-child::before,.tree li:last-child::after{border:0}
-  .tree li:last-child::before{border-right:1px solid var(--line)}
-  .tree li:only-child::after{display:none}
-  .tree li:only-child::before{border:0;border-left:1px solid var(--line);left:50%;right:auto;width:0}
-  .tree>ul>li::before,.tree>ul>li::after{display:none}
-  .tree ul ul::before{content:"";position:absolute;top:0;left:50%;height:36px;border-left:1px solid var(--line)}
+  /* ---------- stage ---------- */
+  .stage{flex:1;min-height:0;overflow:auto;position:relative;cursor:grab;
+         background-image:radial-gradient(var(--dot) 1.3px,transparent 1.4px);background-size:26px 26px}
+  .stage.drag{cursor:grabbing;user-select:none}
+  .sizer{position:relative;margin:0 auto}
+  .scaler{position:absolute;left:0;top:0;transform-origin:0 0}
+  svg.links{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+  .edge{fill:none;stroke-width:3;stroke-linecap:round;opacity:.8;transition:opacity .25s}
 
-  .couple{display:inline-flex;align-items:center}
-  .tie{width:28px;height:1px;background:var(--line)}
+  .card{position:absolute;display:flex;align-items:center;gap:12px;padding:0 14px;background:var(--card);
+    border:2px solid var(--c);border-radius:26px;box-shadow:var(--shadow);cursor:pointer;outline:none;
+    transition:transform .2s,opacity .25s,box-shadow .2s}
+  .card:hover,.card:focus-visible{transform:translateY(-3px)}
+  .card .av{flex:none;width:42px;height:42px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;
+      font-weight:600;font-size:1.05rem}
+  .nm{font-weight:600;font-size:.93rem;line-height:1.22;overflow-wrap:anywhere}
+  .nm .sur{font-weight:400;color:var(--muted)}
+  .card.unk{background:transparent;border-style:dashed;border-color:var(--line);box-shadow:none}
+  .card.unk .av{background:var(--line);color:var(--muted)}
+  .card.unk .nm{font-weight:400;font-style:italic;color:var(--muted)}
+  .rings{position:absolute;width:36px;height:24px;color:var(--gold);transition:opacity .25s}
 
-  .person{width:170px;padding:22px 14px;background:var(--card);border:1px solid var(--line);border-radius:2px;
-    cursor:pointer;transition:border-color .25s, transform .25s;animation:fade .8s ease both}
-  .person:hover{border-color:var(--ink);transform:translateY(-2px)}
-  .nick{font-family:Fraunces,serif;font-weight:400;font-size:1.35rem;line-height:1.1}
-  .name{font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.45;letter-spacing:.02em}
-  .person.hit{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
-  .person.dim{opacity:.25}
-  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .stage.focus .card{opacity:.28}
+  .stage.focus .card.rel,.stage.focus .card.sel{opacity:1}
+  .stage.focus .rings{opacity:.3}
+  .stage.focus .edge{opacity:.1}
+  .stage.focus .edge.on{opacity:.95}
+  .card.rel{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 30%,transparent),var(--shadow)}
+  .card.sel{transform:scale(1.07);box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 40%,transparent),var(--shadow)}
 
-  /* profile */
-  .veil{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(6px);
-    display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s}
-  .veil.open{opacity:1;pointer-events:auto}
-  .panel{width:min(400px,100%);background:var(--card);border:1px solid var(--line);padding:48px 32px 36px;text-align:center;position:relative}
-  .panel .nick{font-size:2.2rem}
-  .panel .full{font-size:.85rem;color:var(--muted);margin-top:10px;line-height:1.5}
-  .panel .meta{font-size:.78rem;color:var(--muted);margin-top:6px}
-  .panel .story{font-family:Fraunces,serif;font-weight:300;font-style:italic;font-size:1.1rem;line-height:1.6;margin:24px 0 0}
-  .rels{margin-top:28px;border-top:1px solid var(--line);padding-top:20px;display:grid;gap:12px;font-size:.85rem}
-  .rels .k{font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-  .chip{display:inline-block;margin:2px 6px;cursor:pointer;border-bottom:1px solid var(--line);padding-bottom:1px}
-  .chip:hover{border-color:var(--ink)}
-  .x{position:absolute;top:12px;right:14px;border:0;background:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
+  /* ---------- overlays ---------- */
+  .sheet{position:fixed;left:50%;top:96px;transform:translate(-50%,-12px);opacity:0;pointer-events:none;z-index:6;
+    background:var(--card);border:1.5px solid var(--line);border-radius:20px;box-shadow:var(--shadow);
+    padding:16px 44px 16px 20px;max-width:min(440px,calc(100vw - 32px));transition:.25s}
+  .sheet.open{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  .sheet b{display:block;font-size:1.05rem}
+  .sheet p{margin:6px 0 0;color:var(--muted);font-size:.9rem;line-height:1.45}
+  .sheet .x{position:absolute;top:8px;right:10px;width:30px;height:30px;border:0;background:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
 
-  footer{text-align:center;font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);padding:0 16px 50px}
+  .zoom{position:fixed;right:18px;bottom:18px;display:flex;gap:8px;z-index:6}
+  .zoom button{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);color:var(--ink);
+    font:600 1.1rem "Bricolage Grotesque",sans-serif;cursor:pointer;box-shadow:var(--shadow)}
+  .zoom button:hover{border-color:var(--gold)}
+  .zoom .fit{width:auto;padding:0 16px;border-radius:999px;font-size:.8rem}
+
+  .legend{position:fixed;left:18px;bottom:18px;z-index:6;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:9px 18px;font-size:.78rem;color:var(--muted);
+    box-shadow:var(--shadow);max-width:calc(100vw - 230px)}
+  .legend span{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+  .legend .dots i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:-3px;border:2px solid var(--card)}
+  @media (max-width:760px){ .legend{display:none} header{padding:14px 16px} }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="eyebrow">Family Tree</div>
-  <h1 id="title"></h1>
-  <div class="dot"></div>
-  <div class="search"><input id="q" placeholder="Search a name" autocomplete="off"></div>
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 44V22"/><path d="M24 32c-6 0-10-4-11-9"/><path d="M24 27c6 0 10-4 11-9"/>
+      <circle cx="24" cy="13" r="8"/><circle cx="12" cy="21" r="5"/><circle cx="36" cy="18" r="5"/>
+    </svg>
+    <div><h1 id="title"></h1><div class="sub">Family Tree</div></div>
+  </div>
+  <div class="search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" placeholder="Search a name" autocomplete="off" aria-label="Search a name">
+    <div class="results" id="results"></div>
+  </div>
 </header>
 
-<div class="wrap"><div class="tree" id="tree"></div></div>
-<footer id="foot"></footer>
-<div class="veil" id="veil"><div class="panel" id="panel"></div></div>
+<div class="stage" id="stage"><div class="sizer" id="sizer"><div class="scaler" id="scaler"></div></div></div>
+
+<div class="sheet" id="sheet"><button class="x" id="sheetX" aria-label="Close">×</button><b id="sName"></b><p id="sMore"></p></div>
+
+<div class="legend">
+  <span><svg width="30" height="20" viewBox="0 0 36 24" fill="none" stroke="#b08a4a" stroke-width="2.4"><circle cx="13" cy="12" r="8.5"/><circle cx="23" cy="12" r="8.5"/></svg>married</span>
+  <span><svg width="26" height="20" viewBox="0 0 26 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M13 1C13 10 4 9 4 19M13 1C13 10 22 9 22 19"/></svg>children</span>
+  <span class="dots"><i style="background:#e4572e"></i><i style="background:#e4572e"></i><i style="background:#e4572e"></i>&nbsp;same colour = brothers &amp; sisters</span>
+</div>
+<div class="zoom"><button id="zOut" aria-label="Zoom out">−</button><button class="fit" id="zFit">Whole tree</button><button id="zIn" aria-label="Zoom in">+</button></div>
 
 <script>
-/* ============================================================
+/* =====================================================================
    YOUR FAMILY DATA — edit only this section.
-   nick: what you call them (shown big). aka: other name.
-   living:true hides dates & birthplace.
-   ============================================================ */
+   • List brothers and sisters from ELDEST to YOUNGEST.
+   • parents: ids of the mother & father.   spouse: id of the husband/wife.
+   • unknown:true  → shows a dashed "Name unknown" card (fill in later).
+   • aka / story / born / died are optional and appear when a card is clicked.
+   ===================================================================== */
 const FAMILY_NAME = "Kottam";
-const TAGLINE     = "";
+const FOCUS = "me";               // the person the page opens centred on
 
 const people = [
-  { id:"tathaya", name:"Kottam Raghupathi Reddy", nick:"Tathaya", spouse:"nannamma", living:true },
-  { id:"nannamma", name:"Kottam Rathnavathi Reddy", nick:"Nannamma", spouse:"tathaya", living:true },
-  { id:"nanna", name:"Kottam Venkata Rama Krishna Reddy", nick:"Nanna", parents:["tathaya","nannamma"], spouse:"maa", living:true },
-  { id:"maa", name:"Kottam Yamuna Reddy", aka:"Kottam Aruna Reddy", nick:"Maa", spouse:"nanna", living:true },
-  { id:"me", name:"Kottam Sharath", nick:"Me", parents:["nanna","maa"], living:true },
-  { id:"chelli", name:"Kottam Siri Chandana Reddy", nick:"Chelli", parents:["nanna","maa"], living:true },
+  /* ---- Dad's grandparents (names not yet known) and Raghupathi's elder brother ---- */
+  { id:"rpF", name:"Name unknown", unknown:true, spouse:"rpM" },
+  { id:"rpM", name:"Name unknown", unknown:true, spouse:"rpF" },
+  { id:"rpBro", name:"Name unknown", unknown:true, parents:["rpF","rpM"], spouse:"narsamma" },
+  { id:"narsamma", name:"Kottam Venkata Narsamma", spouse:"rpBro" },
+  { id:"raghupathi", name:"Kottam Raghupathi Reddy", parents:["rpF","rpM"], spouse:"rathnavathi" },
+  { id:"rathnavathi", name:"Kottam Rathnavathi Reddy", spouse:"raghupathi" },
+
+  /* ---- Dad and his three elder sisters ---- */
+  { id:"ds1", name:"Name unknown", unknown:true, parents:["raghupathi","rathnavathi"], spouse:"ds1h" },
+  { id:"ds1h", name:"Name unknown", unknown:true, spouse:"ds1" },
+  { id:"ds2", name:"Name unknown", unknown:true, parents:["raghupathi","rathnavathi"], spouse:"ds2h" },
+  { id:"ds2h", name:"Name unknown", unknown:true, spouse:"ds2" },
+  { id:"ds3", name:"Name unknown", unknown:true, parents:["raghupathi","rathnavathi"], spouse:"ds3h" },
+  { id:"ds3h", name:"Name unknown", unknown:true, spouse:"ds3" },
+  { id:"nanna", name:"Kottam Venkata Rama Krishna Reddy", parents:["raghupathi","rathnavathi"], spouse:"maa" },
+
+  /* ---- Mom's parents (names not yet known), her elder sister & brother, and Mom ---- */
+  { id:"mpF", name:"Name unknown", unknown:true, spouse:"mpM" },
+  { id:"mpM", name:"Name unknown", unknown:true, spouse:"mpF" },
+  { id:"ms", name:"Name unknown", unknown:true, parents:["mpF","mpM"], spouse:"msh" },
+  { id:"msh", name:"Name unknown", unknown:true, spouse:"ms" },
+  { id:"mb", name:"Name unknown", unknown:true, parents:["mpF","mpM"], spouse:"mbw" },
+  { id:"mbw", name:"Name unknown", unknown:true, spouse:"mb" },
+  { id:"maa", name:"Kottam Yamuna Reddy", aka:"Kottam Aruna Reddy", parents:["mpF","mpM"], spouse:"nanna" },
+
+  /* ---- Us ---- */
+  { id:"me",   name:"Kottam Sharath Chandra Reddy", parents:["nanna","maa"] },
+  { id:"siri", name:"Kottam Siri Chandana Reddy",   parents:["nanna","maa"] },
 ];
 /* ===================== end of data ===================== */
 
-const byId = Object.fromEntries(people.map(p=>[p.id,p]));
-const $ = s=>document.querySelector(s);
-$("#title").textContent = FAMILY_NAME; document.title = FAMILY_NAME + " Family";
-$("#foot").textContent = `${people.length} members`;
 
-const label = p => p.nick || p.name;
-const dates = p => p.living ? "" : (p.born||p.died) ? `${p.born||"?"} – ${p.died||""}` : "";
-const kidsOf = p => people.filter(c=>(c.parents||[]).some(x=>x===p.id||x===p.spouse));
+/* ---------- layout constants ---------- */
+const CARD_H = 76, W_KNOWN = 218, W_UNK = 156, TIE = 50, GAP = 44, TREE_GAP = 120, ROW = 210, PAD = 80;
+const PALETTE = ["#e4572e","#17a398","#e0a100","#7b4fa0","#4a8f3c","#d6457b","#2f6fb0","#9a6b3a"];
 
-let delay = 0;
-function card(p){
-  const d = document.createElement("div");
-  d.className = "person"; d.dataset.id = p.id; d.style.animationDelay = (delay += 80) + "ms";
-  d.innerHTML = `<div class="nick">${label(p)}</div>${p.nick ? `<div class="name">${p.name}</div>` : ""}`;
-  d.onclick = () => showPerson(p.id);
-  return d;
-}
-function branch(p){
-  const li = document.createElement("li");
-  const c = document.createElement("div"); c.className = "couple"; c.append(card(p));
-  const s = byId[p.spouse];
-  if (s){ const t = document.createElement("span"); t.className = "tie"; c.append(t, card(s)); }
-  li.append(c);
-  const kids = kidsOf(p);
-  if (kids.length){ const ul = document.createElement("ul"); kids.forEach(k=>ul.append(branch(k))); li.append(ul); }
-  return li;
-}
-const seen = new Set(), rootList = document.createElement("ul");
-people.forEach(p=>{
-  if ((p.parents||[]).length || seen.has(p.id)) return;
-  const s = byId[p.spouse];
-  if (s && (s.parents||[]).length) return;
-  seen.add(p.id); if (s) seen.add(s.id);
-  rootList.append(branch(p));
+const $ = s => document.querySelector(s);
+const P = Object.fromEntries(people.map(p => [p.id, p]));
+people.forEach(p => { const s = P[p.spouse]; if (s && !s.spouse) s.spouse = p.id; });
+const cw = p => p.unknown ? W_UNK : W_KNOWN;
+
+/* ---------- units: a person, or a married pair ---------- */
+const unitOf = {}, units = [];
+people.forEach(p => {
+  if (unitOf[p.id]) return;
+  const m = [p], s = P[p.spouse];
+  if (s && !unitOf[s.id]) m.push(s);
+  const u = { members: m, kids: [], pu: [] };
+  m.forEach(x => unitOf[x.id] = u); units.push(u);
 });
-$("#tree").append(rootList);
+const hasParentIn = (m, u) => (m.parents || []).some(id => unitOf[id] === u);
+units.forEach(u => {
+  const set = new Set();
+  u.members.forEach(m => (m.parents || []).forEach(id => unitOf[id] && set.add(unitOf[id])));
+  u.pu = [...set]; u.pu.forEach(pu => pu.kids.push(u));
+});
+units.forEach(pu => pu.kids.sort((a, b) => {
+  const k = x => Math.min(...x.members.filter(m => hasParentIn(m, pu)).map(m => people.indexOf(m)));
+  return k(a) - k(b);
+}));
 
-const chip = id => byId[id] ? `<span class="chip" onclick="showPerson('${id}')">${label(byId[id])}</span>` : "";
-function showPerson(id){
-  const p = byId[id], kids = kidsOf(p);
-  const meta = [dates(p), !p.living && p.place].filter(Boolean).join(" · ");
-  const rel = (k,v) => v ? `<div><div class="k">${k}</div>${v}</div>` : "";
-  $("#panel").innerHTML = `
-    <button class="x" onclick="shut()">×</button>
-    <div class="nick">${label(p)}</div>
-    <div class="full">${p.name}${p.aka ? `<br>also known as ${p.aka}` : ""}</div>
-    ${meta ? `<div class="meta">${meta}</div>` : ""}
-    ${p.story ? `<p class="story">${p.story}</p>` : ""}
-    <div class="rels">
-      ${rel("Parents", (p.parents||[]).map(chip).join(""))}
-      ${rel("Spouse", byId[p.spouse] ? chip(p.spouse) : "")}
-      ${rel("Children", kids.map(k=>chip(k.id)).join(""))}
-    </div>`;
-  $("#veil").classList.add("open");
+/* ---------- generations (rows) ---------- */
+const gen = new Map(units.map(u => [u, 0]));
+for (let i = 0; i < 80; i++) {
+  let ch = false;
+  units.forEach(u => { if (u.pu.length) { const g = Math.max(...u.pu.map(x => gen.get(x))) + 1; if (g > gen.get(u)) { gen.set(u, g); ch = true; } } });
+  units.forEach(u => { if (u.kids.length) { const g = Math.max(...u.kids.map(k => gen.get(k))); u.kids.forEach(k => { if (gen.get(k) < g) { gen.set(k, g); ch = true; } }); } });
+  units.forEach(u => { if (!u.pu.length && u.kids.length) { const g = Math.min(...u.kids.map(k => gen.get(k))) - 1; if (g > gen.get(u)) { gen.set(u, g); ch = true; } } });
+  if (!ch) break;
 }
-function shut(){ $("#veil").classList.remove("open"); }
-$("#veil").onclick = e => { if (e.target.id==="veil") shut(); };
-addEventListener("keydown", e => { if (e.key==="Escape") shut(); });
 
-$("#q").oninput = e => {
-  const q = e.target.value.trim().toLowerCase(); let first;
-  document.querySelectorAll(".person").forEach(el=>{
-    const p = byId[el.dataset.id];
-    const hit = q && [p.name,p.nick,p.aka].filter(Boolean).join(" ").toLowerCase().includes(q);
-    el.classList.toggle("hit", !!hit); el.classList.toggle("dim", !!q && !hit);
-    if (hit && !first) first = el;
+/* ---------- trees: each family line is laid out as its own tree ---------- */
+const countDesc = u => { const seen = new Set(); (function d(x) { x.kids.forEach(k => { if (!seen.has(k)) { seen.add(k); d(k); } }); })(u); return seen.size; };
+const roots = units.filter(u => !u.pu.length).sort((a, b) => countDesc(b) - countDesc(a));
+const claimed = new Set();
+function build(u) {
+  const n = { u, kids: [], refs: [] };
+  u.kids.forEach(k => {
+    if (claimed.has(k)) { n.refs.push(k); return; }
+    claimed.add(k);
+    k.members.sort((a, b) => hasParentIn(b, u) - hasParentIn(a, u));   // blood relative first
+    n.kids.push(build(k));
   });
-  first?.scrollIntoView({behavior:"smooth",block:"center",inline:"center"});
+  if (n.refs.length) n.kids.reverse();     // mirrors a married-in family around the couple
+  return n;
+}
+const trees = roots.map(r => { claimed.add(r); return build(r); });
+
+const uw = u => u.members.reduce((a, m) => a + cw(m), 0) + TIE * (u.members.length - 1);
+function measure(n) {
+  n.kids.forEach(measure);
+  n.cw = n.kids.reduce((a, k) => a + k.w, 0) + GAP * Math.max(0, n.kids.length - 1);
+  n.w = Math.max(uw(n.u), n.cw);
+}
+function placeUnit(u, left) {
+  let x = left; u.y = PAD + gen.get(u) * ROW;
+  u.members.forEach(m => { m.x = x; m.y = u.y; x += cw(m) + TIE; });
+}
+function pos(n, left) {
+  placeUnit(n.u, left + (n.w - uw(n.u)) / 2);
+  let x = left + (n.w - n.cw) / 2;
+  n.kids.forEach(k => { pos(k, x); x += k.w + GAP; });
+}
+let cursor = PAD;
+trees.forEach(t => { measure(t); pos(t, cursor); cursor += t.w + TREE_GAP; });
+const TOTAL_W = cursor - TREE_GAP + PAD;
+const TOTAL_H = PAD * 2 + Math.max(...[...gen.values()]) * ROW + CARD_H;
+
+/* ---------- connections & colours (brothers & sisters share one colour) ---------- */
+const groupColor = new Map(); let ci = 0;
+const edges = [];
+function collect(n) {
+  if (n.kids.length || n.refs.length) groupColor.set(n.u, PALETTE[ci++ % PALETTE.length]);
+  n.kids.forEach(k => { edges.push({ from: n.u, to: k.u }); collect(k); });
+  n.refs.forEach(r => edges.push({ from: n.u, to: r }));
+}
+trees.forEach(collect);
+const colorOf = p => { const pu = (p.parents || []).map(id => unitOf[id]).find(Boolean); return (pu && groupColor.get(pu)) || "var(--muted)"; };
+
+/* ---------- draw ---------- */
+const NS = "http://www.w3.org/2000/svg";
+const scaler = $("#scaler");
+scaler.style.width = TOTAL_W + "px"; scaler.style.height = TOTAL_H + "px";
+const svg = document.createElementNS(NS, "svg");
+svg.setAttribute("class", "links"); svg.setAttribute("width", TOTAL_W); svg.setAttribute("height", TOTAL_H);
+scaler.append(svg);
+
+const unitAnchor = u => {
+  const a = u.members[0];
+  return u.members.length === 2 ? { x: a.x + cw(a) + TIE / 2, y: u.y + CARD_H / 2 + 16 } : { x: a.x + cw(a) / 2, y: u.y + CARD_H };
 };
+const edgeEls = [];
+edges.forEach(e => {
+  const a = unitAnchor(e.from);
+  const m = e.to.members.find(x => hasParentIn(x, e.from)) || e.to.members[0];
+  const bx = m.x + cw(m) / 2, by = e.to.y, my = (a.y + by) / 2;
+  const path = document.createElementNS(NS, "path");
+  path.setAttribute("d", `M${a.x},${a.y} C${a.x},${my} ${bx},${my} ${bx},${by}`);
+  path.setAttribute("class", "edge"); path.setAttribute("stroke", groupColor.get(e.from));
+  svg.append(path); edgeEls.push({ el: path, from: e.from, to: e.to });
+});
+
+const RING = '<svg viewBox="0 0 36 24" width="36" height="24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="13" cy="12" r="8.5"/><circle cx="23" cy="12" r="8.5"/></svg>';
+const cardEls = {};
+units.forEach(u => {
+  if (u.members.length === 2) {
+    const a = u.members[0], r = document.createElement("div");
+    r.className = "rings"; r.innerHTML = RING;
+    r.style.left = (a.x + cw(a) + TIE / 2 - 18) + "px"; r.style.top = (u.y + CARD_H / 2 - 12) + "px";
+    scaler.append(r);
+  }
+  u.members.forEach(p => {
+    const el = document.createElement("div");
+    el.className = "card" + (p.unknown ? " unk" : ""); el.tabIndex = 0; el.setAttribute("role", "button"); el.dataset.id = p.id;
+    el.style.cssText = `left:${p.x}px;top:${p.y}px;width:${cw(p)}px;height:${CARD_H}px;--c:${colorOf(p)}`;
+    const words = p.name.split(/\s+/), hasSur = !p.unknown && words[0] === "Kottam" && words.length > 1;
+    const av = document.createElement("div"); av.className = "av";
+    av.textContent = p.unknown ? "?" : (hasSur ? words[1] : words[0])[0].toUpperCase();
+    const nm = document.createElement("div"); nm.className = "nm";
+    if (hasSur) { const s = document.createElement("span"); s.className = "sur"; s.textContent = "Kottam "; nm.append(s, words.slice(1).join(" ")); }
+    else nm.textContent = p.name;
+    el.append(av, nm); scaler.append(el); cardEls[p.id] = el;
+    el.onclick = ev => { ev.stopPropagation(); select(p.id); };
+    el.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select(p.id); } };
+  });
+});
+
+/* ---------- selection: lights up a person's close family, dims the rest ---------- */
+const stage = $("#stage"), sheet = $("#sheet");
+function clearSel() {
+  stage.classList.remove("focus"); sheet.classList.remove("open");
+  Object.values(cardEls).forEach(c => c.classList.remove("sel", "rel"));
+  edgeEls.forEach(e => e.el.classList.remove("on"));
+}
+function select(id) {
+  clearSel();
+  const p = P[id], rel = new Set([id]), pids = p.parents || [];
+  pids.forEach(x => rel.add(x)); if (p.spouse) rel.add(p.spouse);
+  people.forEach(q => {
+    if ((q.parents || []).includes(id)) rel.add(q.id);
+    if (pids.length && (q.parents || []).some(x => pids.includes(x))) rel.add(q.id);
+  });
+  stage.classList.add("focus");
+  rel.forEach(x => cardEls[x] && cardEls[x].classList.add("rel"));
+  cardEls[id].classList.add("sel");
+  const u = unitOf[id], pu = pids.length ? unitOf[pids[0]] : null;
+  const pUnits = pids.map(x => unitOf[x]);
+  edgeEls.forEach(e => { if (e.from === u || e.to === u || (pu && e.from === pu) || pUnits.includes(e.to)) e.el.classList.add("on"); });
+  sheet.style.top = ($("header").offsetHeight + 8) + "px";
+  $("#sName").textContent = p.name;
+  const bits = [];
+  if (p.aka) bits.push("Also known as " + p.aka);
+  if (p.born || p.died) bits.push((p.born || "?") + " – " + (p.died || ""));
+  if (p.story) bits.push(p.story);
+  $("#sMore").textContent = bits.join(" · "); $("#sMore").style.display = bits.length ? "" : "none";
+  sheet.classList.add("open");
+}
+$("#sheetX").onclick = clearSel;
+addEventListener("keydown", e => { if (e.key === "Escape") { clearSel(); closeResults(); } });
+
+/* ---------- zoom, pan, centring ---------- */
+let S = 1;
+const sizer = $("#sizer");
+function applyScale() {
+  scaler.style.transform = `scale(${S})`;
+  sizer.style.width = TOTAL_W * S + "px"; sizer.style.height = TOTAL_H * S + "px";
+}
+function zoomTo(ns) {
+  ns = Math.min(1.5, Math.max(0.18, ns));
+  const cx = (stage.scrollLeft + stage.clientWidth / 2) / S, cy = (stage.scrollTop + stage.clientHeight / 2) / S;
+  S = ns; applyScale();
+  stage.scrollLeft = cx * S - stage.clientWidth / 2; stage.scrollTop = cy * S - stage.clientHeight / 2;
+}
+function centerOn(id, smooth) {
+  const p = P[id];
+  stage.scrollTo({ left: (p.x + cw(p) / 2) * S - stage.clientWidth / 2, top: (p.y + CARD_H / 2) * S - stage.clientHeight / 2 - 40, behavior: smooth ? "smooth" : "auto" });
+}
+$("#zIn").onclick = () => zoomTo(S * 1.2);
+$("#zOut").onclick = () => zoomTo(S / 1.2);
+$("#zFit").onclick = () => { S = Math.min(stage.clientWidth / TOTAL_W, stage.clientHeight / TOTAL_H, 1); applyScale(); stage.scrollTo(0, 0); };
+stage.addEventListener("wheel", e => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); zoomTo(S * (e.deltaY < 0 ? 1.1 : 0.9)); } }, { passive: false });
+
+let drag = null, moved = false;
+stage.addEventListener("pointerdown", e => {
+  if (e.pointerType === "touch" || e.target.closest(".card")) return;
+  drag = { x: e.clientX, y: e.clientY, l: stage.scrollLeft, t: stage.scrollTop }; moved = false;
+});
+addEventListener("pointermove", e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (Math.abs(dx) + Math.abs(dy) > 4) { moved = true; stage.classList.add("drag"); }
+  stage.scrollLeft = drag.l - dx; stage.scrollTop = drag.t - dy;
+});
+addEventListener("pointerup", () => { drag = null; stage.classList.remove("drag"); });
+stage.addEventListener("click", () => { if (!moved) clearSel(); moved = false; });
+
+/* ---------- search ---------- */
+const q = $("#q"), results = $("#results");
+const closeResults = () => results.classList.remove("open");
+function renderResults() {
+  const t = q.value.trim().toLowerCase();
+  if (!t) { closeResults(); return; }
+  const hits = people.filter(p => !p.unknown && [p.name, p.aka].filter(Boolean).join(" ").toLowerCase().includes(t));
+  results.innerHTML = "";
+  if (!hits.length) { const d = document.createElement("div"); d.className = "none"; d.textContent = "No one found"; results.append(d); }
+  hits.slice(0, 8).forEach((p, i) => {
+    const b = document.createElement("button"); if (!i) b.className = "on";
+    const av = document.createElement("div"); av.className = "av"; av.style.setProperty("--c", colorOf(p));
+    const w = p.name.split(/\s+/); av.textContent = (w[0] === "Kottam" && w[1] ? w[1] : w[0])[0].toUpperCase();
+    b.append(av, p.name);
+    b.onclick = () => go(p.id);
+    results.append(b);
+  });
+  results.classList.add("open");
+}
+function go(id) { closeResults(); q.value = ""; q.blur(); select(id); centerOn(id, true); }
+q.oninput = renderResults;
+q.onkeydown = e => { if (e.key === "Enter") { const t = results.querySelector("button"); if (t) t.click(); } };
+document.addEventListener("click", e => { if (!e.target.closest(".search")) closeResults(); });
+
+/* ---------- start ---------- */
+$("#title").textContent = FAMILY_NAME; document.title = FAMILY_NAME + " Family";
+S = innerWidth < 700 ? 0.7 : 0.9; applyScale(); centerOn(FOCUS, false);
 </script>
 </body>
 </html>
