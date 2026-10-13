@@ -39,7 +39,7 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .33 0 0 0 0 .2 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
   /* ---------- header ---------- */
-  header{flex:none;position:relative;z-index:6;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  header{flex:none;position:relative;z-index:9;display:flex;align-items:center;justify-content:space-between;gap:14px;
          flex-wrap:wrap;padding:18px 28px 10px}
   .brand{display:flex;align-items:center;gap:14px}
   .logo{width:46px;height:46px;color:var(--gold);flex:none;overflow:visible}
@@ -350,12 +350,295 @@ const TOTAL_W = cursor - TREE_GAP + PADX;
 const TOTAL_H = PADY * 2 + Math.max(...[...gen.values()]) * ROW + NODE_H;
 
 const groupColor = new Map(); let ci = 0; const edges = [];
-(function collect(n) {
+trees.forEach(t => collect_(t));
+function collect_(n) {
   if (n.kids.length || n.refs.length) groupColor.set(n.u, PALETTE[ci++ % PALETTE.length]);
-  n.kids.forEach(k => { edges.push({ from: n.u, to: k.u }); collect(k); });
+  n.kids.forEach(k => { edges.push({ from: n.u, to: k.u }); collect_(k); });
   n.refs.forEach(r => edges.push({ from: n.u, to: r }));
-})
-;trees.forEach(t => { (function c(n){ if (n.kids.length || n.refs.length) groupColor.set(n.u, PALETTE[ci++ % PALETTE.length]); n.kids.forEach(c); })(t); });
+}
+const colorOf = p => { const pu = (p.parents || []).map(id => unitOf[id]).find(Boolean); return (pu && groupColor.get(pu)) || NEUTRAL; };
+
+/* ================= helpers ================= */
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const parts = p => {
+  const w = p.name.split(/\s+/);
+  const house = !p.unknown && w.length > 1 && HOUSES.includes(w[0]) ? w[0] : null;
+  const given = house ? w.slice(1).join(" ") : p.name;
+  return { house, given, letter: p.unknown ? "?" : given[0].toUpperCase() };
+};
+function portrait(p) {
+  const wrap = el("div", "portrait"), ring = el("div", "ring"), face = el("div", "face");
+  if (p.photo) { const im = new Image(); im.src = p.photo; im.alt = ""; im.onerror = () => { im.remove(); face.textContent = parts(p).letter; }; face.append(im); }
+  else face.textContent = parts(p).letter;
+  ring.append(face); wrap.append(ring); return wrap;
+}
+function nameBlock(p) {
+  const nm = el("div", "nm"), { house, given } = parts(p);
+  if (house) nm.append(el("span", "house", house));
+  nm.append(given); return nm;
+}
+
+/* ================= draw the tree ================= */
+const world = $("#world"), view = $("#view");
+world.style.width = TOTAL_W + "px"; world.style.height = TOTAL_H + "px";
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.createElementNS(NS, "svg");
+svg.setAttribute("class", "links"); svg.setAttribute("width", TOTAL_W); svg.setAttribute("height", TOTAL_H);
+world.append(svg);
+
+const unitAnchor = u => {
+  const a = u.members[0];
+  return u.members.length === 2 ? { x: a.x + W + TIE / 2, y: u.y + PORT / 2 + 22 } : { x: a.x + W / 2, y: u.y + NODE_H };
+};
+const edgeEls = [];
+edges.forEach(e => {
+  const a = unitAnchor(e.from);
+  const m = e.to.members.find(x => hasParentIn(x, e.from)) || e.to.members[0];
+  const bx = m.x + W / 2, by = e.to.y - 4, my = a.y + (by - a.y) * 0.55;
+  const path = document.createElementNS(NS, "path");
+  path.setAttribute("d", `M${a.x},${a.y} C${a.x},${my} ${bx},${my} ${bx},${by}`);
+  path.setAttribute("class", "edge");
+  svg.append(path);
+  path.style.setProperty("--len", Math.ceil(path.getTotalLength()) + 2);
+  path.style.setProperty("--d", (gen.get(e.from) * 0.32 + 0.7).toFixed(2) + "s");
+  path.style.setProperty("--ec", groupColor.get(e.from));
+  path.addEventListener("animationend", () => path.classList.add("done"));
+  edgeEls.push({ el: path, from: e.from, to: e.to });
+});
+
+const RINGS = '<svg width="22" height="16" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="13" cy="12" r="8.5"/><circle cx="23" cy="12" r="8.5"/></svg>';
+const nodeEls = {};
+const delayOf = (p, extra = 0) => (gen.get(unitOf[p.id]) * 0.32 + (p.x / TOTAL_W) * 0.9 + extra).toFixed(2) + "s";
+units.forEach(u => {
+  if (u.members.length === 2) {
+    const [a, b] = u.members, cy = u.y + PORT / 2;
+    const th = el("div", "thread"), lx = a.x + W / 2 + PORT / 2 + 2;
+    th.style.cssText = `left:${lx}px;top:${cy - 1}px;width:${b.x + W / 2 - PORT / 2 - 2 - lx}px;--d:${delayOf(a, .5)}`;
+    const bd = el("div", "badge"); bd.innerHTML = RINGS;
+    bd.style.cssText = `left:${a.x + W + TIE / 2 - 17}px;top:${cy - 17}px;--d:${delayOf(a, .55)}`;
+    world.append(th, bd);
+  }
+  u.members.forEach(p => {
+    const n = el("div", "node" + (p.unknown ? " unk" : ""));
+    n.tabIndex = 0; n.setAttribute("role", "button"); n.setAttribute("aria-label", p.name);
+    n.style.cssText = `left:${p.x}px;top:${p.y}px;width:${W}px;--c:${colorOf(p)};--d:${delayOf(p)}`;
+    n.append(portrait(p), nameBlock(p)); world.append(n); nodeEls[p.id] = n;
+    n.addEventListener("click", ev => { ev.stopPropagation(); if (!dragged) select(p.id); });
+    n.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select(p.id); } });
+  });
+});
+
+/* ================= camera ================= */
+const cam = { x: 0, y: 0, k: 1 };
+let raf = 0, inertiaRaf = 0, dragged = false;
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const vp = () => {
+  const vw = view.clientWidth, vh = view.clientHeight; let cx = vw / 2, cy = vh / 2;
+  if (panel.classList.contains("open")) {
+    if (!isMobile()) cx = (vw - 400) / 2;
+    else cy = Math.max(70, (vh - panel.offsetHeight) / 2);
+  }
+  return { vw, vh, cx, cy };
+};
+const fitK = () => Math.min(view.clientWidth / TOTAL_W, view.clientHeight / TOTAL_H) * 0.96;
+const minK = () => Math.max(0.05, fitK() * 0.85), MAXK = 1.8;
+function limit() {
+  const { vw, vh } = vp(), m = 140, w = TOTAL_W * cam.k, h = TOTAL_H * cam.k;
+  cam.x = clamp(cam.x, m - w, vw - m); cam.y = clamp(cam.y, m - h, vh - m);
+}
+function apply() { world.style.transform = `translate(${cam.x}px,${cam.y}px) scale(${cam.k})`; drawMini(); }
+function zoomAt(px, py, nk) {
+  nk = clamp(nk, minK(), MAXK); const r = nk / cam.k;
+  cam.x = px - (px - cam.x) * r; cam.y = py - (py - cam.y) * r; cam.k = nk; limit(); apply();
+}
+const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+function flyTo(wx, wy, k, dur = 1200) {
+  cancelAnimationFrame(raf); cancelAnimationFrame(inertiaRaf);
+  const { cx, cy, vw, vh } = vp(); k = clamp(k, minK(), MAXK);
+  const s = { x: (cx - cam.x) / cam.k, y: (cy - cam.y) / cam.k, k: cam.k };
+  if (reduce || dur === 0) { cam.k = k; cam.x = cx - wx * k; cam.y = cy - wy * k; limit(); apply(); return; }
+  const dist = Math.hypot((wx - s.x) * s.k, (wy - s.y) * s.k) / Math.hypot(vw, vh);
+  const dip = Math.min(0.45, Math.max(0, (dist - 0.5) * 0.5));
+  const t0 = performance.now();
+  (function step(now) {
+    const u = Math.min(1, (now - t0) / dur), e = ease(u);
+    const ax = s.x + (wx - s.x) * e, ay = s.y + (wy - s.y) * e;
+    const kk = (s.k + (k - s.k) * e) * (1 - dip * Math.sin(Math.PI * u));
+    cam.k = Math.max(minK() * 0.9, kk); cam.x = cx - ax * cam.k; cam.y = cy - ay * cam.k; apply();
+    if (u < 1) raf = requestAnimationFrame(step); else { limit(); apply(); }
+  })(t0);
+}
+const centerOfPerson = p => ({ x: p.x + W / 2, y: p.y + PORT / 2 + 20 });
+const flyToPerson = (id, k, dur) => { const c = centerOfPerson(P[id]); flyTo(c.x, c.y, k, dur); };
+const worldCenter = () => { const { cx, cy } = vp(); return { x: (cx - cam.x) / cam.k, y: (cy - cam.y) / cam.k }; };
+
+/* pointer gestures: drag, inertia, pinch */
+const ptrs = new Map(); let g = null;
+view.addEventListener("pointerdown", e => {
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  cancelAnimationFrame(raf); cancelAnimationFrame(inertiaRaf); quietHint();
+  if (ptrs.size === 1) { dragged = false; g = { t: "pan", sx: e.clientX, sy: e.clientY, cx: cam.x, cy: cam.y, vx: 0, vy: 0, lx: e.clientX, ly: e.clientY, lt: performance.now() }; }
+  else if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; g = { t: "pinch", d: Math.hypot(a.x - b.x, a.y - b.y), k: cam.k }; dragged = true; }
+});
+addEventListener("pointermove", e => {
+  if (!ptrs.has(e.pointerId) || !g) return;
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (g.t === "pan" && ptrs.size === 1) {
+    const dx = e.clientX - g.sx, dy = e.clientY - g.sy;
+    if (!dragged && Math.hypot(dx, dy) > 6) { dragged = true; view.classList.add("grabbing"); }
+    if (!dragged) return;
+    const now = performance.now(), dt = Math.max(1, now - g.lt);
+    g.vx = 0.8 * g.vx + 0.2 * (e.clientX - g.lx) / dt; g.vy = 0.8 * g.vy + 0.2 * (e.clientY - g.ly) / dt; g.lx = e.clientX; g.ly = e.clientY; g.lt = now;
+    cam.x = g.cx + dx; cam.y = g.cy + dy; limit(); apply();
+  } else if (g.t === "pinch" && ptrs.size === 2) {
+    const [a, b] = [...ptrs.values()], r = view.getBoundingClientRect();
+    zoomAt((a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top, g.k * Math.hypot(a.x - b.x, a.y - b.y) / g.d);
+  }
+});
+function endPtr(e) {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.delete(e.pointerId); view.classList.remove("grabbing");
+  if (g && g.t === "pan" && dragged && ptrs.size === 0 && !reduce && Math.hypot(g.vx, g.vy) > 0.15) {
+    let vx = g.vx * 16, vy = g.vy * 16;
+    (function tick() { cam.x += vx; cam.y += vy; vx *= 0.93; vy *= 0.93; limit(); apply(); if (Math.hypot(vx, vy) > 0.3) inertiaRaf = requestAnimationFrame(tick); })();
+  }
+  if (ptrs.size === 1) { const [p] = [...ptrs.values()]; g = { t: "pan", sx: p.x, sy: p.y, cx: cam.x, cy: cam.y, vx: 0, vy: 0, lx: p.x, ly: p.y, lt: performance.now() }; }
+  else if (ptrs.size === 0) g = null;
+}
+addEventListener("pointerup", endPtr); addEventListener("pointercancel", endPtr);
+view.addEventListener("wheel", e => {
+  e.preventDefault(); cancelAnimationFrame(raf); quietHint();
+  const r = view.getBoundingClientRect();
+  zoomAt(e.clientX - r.left, e.clientY - r.top, cam.k * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)));
+}, { passive: false });
+view.addEventListener("dblclick", e => { if (e.target.closest(".node")) return; const r = view.getBoundingClientRect(), c = { x: (e.clientX - r.left - cam.x) / cam.k, y: (e.clientY - r.top - cam.y) / cam.k }; flyToAt(c, cam.k * 1.6); });
+function flyToAt(c, k) { flyTo(c.x, c.y, k, 700); }
+view.addEventListener("click", () => { if (!dragged) clearSel(); });
+addEventListener("keydown", e => {
+  if (e.target === q) return;
+  const step = 90;
+  if (e.key === "ArrowLeft") { cam.x += step; limit(); apply(); }
+  else if (e.key === "ArrowRight") { cam.x -= step; limit(); apply(); }
+  else if (e.key === "ArrowUp") { cam.y += step; limit(); apply(); }
+  else if (e.key === "ArrowDown") { cam.y -= step; limit(); apply(); }
+  else if (e.key === "+" || e.key === "=") zoomBy(1.3);
+  else if (e.key === "-") zoomBy(1 / 1.3);
+  else if (e.key === "0") fitAll();
+  else if (e.key === "Escape") { clearSel(); closeResults(); $("#legend").classList.remove("open"); }
+});
+
+/* dock */
+function zoomBy(f) { const c = worldCenter(); flyTo(c.x, c.y, cam.k * f, 450); }
+function fitAll() { clearSel(); flyTo(TOTAL_W / 2, TOTAL_H / 2, fitK(), 1300); }
+$("#zIn").onclick = () => zoomBy(1.35); $("#zOut").onclick = () => zoomBy(1 / 1.35);
+$("#zFit").onclick = fitAll;
+$("#zMe").onclick = () => { clearSel(); flyToPerson(FOCUS, isMobile() ? 0.8 : 1, 1300); };
+$("#help").onclick = e => { e.stopPropagation(); $("#legend").classList.toggle("open"); };
+document.addEventListener("click", e => { if (!e.target.closest("#legend,#help")) $("#legend").classList.remove("open"); });
+
+/* ================= selection & panel ================= */
+const panel = $("#panel");
+function kinOf(id) {
+  const p = P[id], pids = p.parents || [], out = [...pids];
+  if (p.spouse) out.push(p.spouse);
+  if (pids.length) people.forEach(q => { if (q.id !== id && (q.parents || []).some(x => pids.includes(x))) out.push(q.id); });
+  people.forEach(q => { if ((q.parents || []).includes(id)) out.push(q.id); });
+  return [...new Set(out)].filter(x => P[x] && !P[x].unknown);
+}
+function clearSel() {
+  world.classList.remove("focus"); panel.classList.remove("open"); document.body.classList.remove("has-panel");
+  Object.values(nodeEls).forEach(n => n.classList.remove("sel", "rel")); edgeEls.forEach(e => e.el.classList.remove("on"));
+}
+function select(id, fly = true) {
+  quietHint();
+  Object.values(nodeEls).forEach(n => n.classList.remove("sel", "rel")); edgeEls.forEach(e => e.el.classList.remove("on"));
+  const p = P[id], pids = p.parents || [], rel = new Set([id]);
+  pids.forEach(x => rel.add(x)); if (p.spouse) rel.add(p.spouse);
+  people.forEach(q => { if ((q.parents || []).includes(id) || (pids.length && (q.parents || []).some(x => pids.includes(x)))) rel.add(q.id); });
+  world.classList.add("focus");
+  rel.forEach(x => nodeEls[x] && nodeEls[x].classList.add("rel")); nodeEls[id].classList.add("sel");
+  const u = unitOf[id], pu = pids.length ? unitOf[pids[0]] : null, pUnits = pids.map(x => unitOf[x]);
+  edgeEls.forEach(e => { if (e.from === u || e.to === u || (pu && e.from === pu) || pUnits.includes(e.to)) e.el.classList.add("on"); });
+
+  const { house, given } = parts(p), bits = [];
+  if (p.aka) bits.push("Also known as " + p.aka);
+  if (p.born || p.died) bits.push((p.born || "?") + " – " + (p.died || ""));
+  panel.innerHTML = "";
+  panel.style.setProperty("--c", colorOf(p));
+  const x = el("button", "x", "×"); x.setAttribute("aria-label", "Close"); x.onclick = e => { e.stopPropagation(); clearSel(); };
+  const pp = el("div", "pp"); pp.style.setProperty("--c", colorOf(p));
+  const h2 = el("h2"); if (house) h2.append(el("span", "house", house)); h2.append(p.unknown ? "Name unknown" : given);
+  pp.append(portrait(p), h2); panel.append(x, pp);
+  if (bits.length || p.story) panel.append(el("p", "meta", [...bits, p.story].filter(Boolean).join(" · ")));
+  const kin = kinOf(id);
+  if (kin.length) {
+    const box = el("div", "kin"), chips = el("div", "chips"); box.append(el("small", "", "Close family"));
+    kin.forEach((kid, i) => {
+      const q2 = P[kid], b = el("button", "chip"); b.style.setProperty("--c", colorOf(q2)); b.style.animationDelay = (0.25 + i * 0.06) + "s";
+      const dot = el("i", "", parts(q2).letter); b.append(dot, parts(q2).given);
+      b.title = q2.name; b.onclick = e => { e.stopPropagation(); select(kid); };
+      chips.append(b);
+    });
+    box.append(chips); panel.append(box);
+  }
+  panel.classList.add("open"); document.body.classList.add("has-panel");
+  panel.scrollTop = 0;
+  if (fly) requestAnimationFrame(() => flyToPerson(id, clamp(cam.k, isMobile() ? 0.8 : 0.95, 1.25), 1100));
+}
+
+/* ================= search ================= */
+const q = $("#q"), results = $("#results");
+const closeResults = () => results.classList.remove("open");
+function renderResults() {
+  const t = q.value.trim().toLowerCase();
+  if (!t) { closeResults(); return; }
+  const hits = people.filter(p => !p.unknown && [p.name, p.aka].filter(Boolean).join(" ").toLowerCase().includes(t));
+  results.innerHTML = "";
+  if (!hits.length) results.append(el("div", "none", "No one found"));
+  hits.slice(0, 7).forEach((p, i) => {
+    const b = el("button", i ? "" : "on"), c = el("span", "chip"); b.style.setProperty("--c", colorOf(p));
+    const dot = el("i", "", parts(p).letter); dot.style.cssText = "width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:italic 500 1rem var(--serif);flex:none;" +
+      `background:color-mix(in srgb,${colorOf(p)} 20%,var(--paper));box-shadow:0 0 0 2px ${colorOf(p)};color:color-mix(in srgb,${colorOf(p)} 70%,var(--ink))`;
+    b.append(dot, p.name); b.onclick = () => { closeResults(); q.value = ""; q.blur(); select(p.id); };
+    results.append(b);
+  });
+  results.classList.add("open");
+}
+q.oninput = renderResults;
+q.onfocus = renderResults;
+q.onkeydown = e => { if (e.key === "Enter") { const b = results.querySelector("button"); if (b) b.click(); } };
+document.addEventListener("click", e => { if (!e.target.closest(".search")) closeResults(); });
+
+/* ================= minimap ================= */
+const mini = $("#mini");
+mini.innerHTML = `<svg viewBox="0 0 ${TOTAL_W} ${TOTAL_H}"><g id="dots"></g><rect id="mv" fill="rgba(185,143,67,.12)" stroke="#b98f43" stroke-width="${TOTAL_W / 190}" rx="${TOTAL_W / 120}"/></svg>`;
+const dots = mini.querySelector("#dots"), mv = mini.querySelector("#mv");
+people.forEach(p => { const c = document.createElementNS(NS, "circle"); c.setAttribute("cx", p.x + W / 2); c.setAttribute("cy", p.y + PORT / 2); c.setAttribute("r", TOTAL_W / 130);
+  c.setAttribute("fill", p.unknown ? "#cdbfa6" : colorOf(p)); dots.append(c); });
+function drawMini() {
+  const w = view.clientWidth / cam.k, h = view.clientHeight / cam.k;
+  mv.setAttribute("x", -cam.x / cam.k); mv.setAttribute("y", -cam.y / cam.k); mv.setAttribute("width", w); mv.setAttribute("height", h);
+}
+mini.addEventListener("click", e => {
+  const r = mini.querySelector("svg").getBoundingClientRect();
+  flyTo((e.clientX - r.left) / r.width * TOTAL_W, (e.clientY - r.top) / r.height * TOTAL_H, cam.k, 900);
+});
+
+/* ================= hint & start ================= */
+let hintGone = false; const hint = $("#hint");
+function quietHint() { if (hintGone) return; hintGone = true; hint.classList.add("gone"); }
+setTimeout(quietHint, 11000);
+addEventListener("resize", () => { limit(); apply(); const t = document.getElementById("top"); document.documentElement.style.setProperty("--hh", t.offsetHeight + "px"); });
+
+$("#title").textContent = FAMILY_NAME; document.title = FAMILY_NAME + " Family";
+document.documentElement.style.setProperty("--hh", $("#top").offsetHeight + "px");
+(function start() {
+  // begin zoomed out over the whole tree, then glide in to you
+  const { cx, cy } = vp(), k0 = fitK();
+  cam.k = k0; cam.x = cx - (TOTAL_W / 2) * k0; cam.y = cy - (TOTAL_H / 2) * k0; apply();
+  const go = () => flyToPerson(FOCUS, isMobile() ? 0.8 : 1, 2400);
+  if (reduce) { flyToPerson(FOCUS, isMobile() ? 0.8 : 1, 0); } else setTimeout(go, 1900);
+})();
 </script>
 </body>
 </html>
