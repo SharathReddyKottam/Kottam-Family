@@ -218,6 +218,9 @@
 <div class="hint" id="hint">Tap anyone to meet them &nbsp;·&nbsp; drag to explore &nbsp;·&nbsp; pinch to zoom</div>
 
 <script>
+(function () {
+try {
+
 /* =====================================================================
    YOUR FAMILY DATA — edit only this section.
    • List brothers and sisters from ELDEST to YOUNGEST.
@@ -638,6 +641,14 @@ document.documentElement.style.setProperty("--hh", $("#top").offsetHeight + "px"
   cam.k = k0; cam.x = cx - (TOTAL_W / 2) * k0; cam.y = cy - (TOTAL_H / 2) * k0; apply();
   const go = () => flyToPerson(FOCUS, isMobile() ? 0.8 : 1, 2400);
   if (reduce) { flyToPerson(FOCUS, isMobile() ? 0.8 : 1, 0); } else setTimeout(go, 1900);
+})();
+
+} catch (err) {
+  var b = document.createElement("div");
+  b.style.cssText = "position:fixed;left:16px;right:16px;top:40%;z-index:99;padding:18px 20px;border-radius:16px;background:#fff3ef;color:#7a2a17;border:1.5px solid #e4572e;font:15px/1.5 system-ui,sans-serif";
+  b.textContent = "The tree could not be drawn in this browser. Please send this message to Sharath: " + (err && err.message) + (err && err.line ? " (line " + err.line + ")" : "");
+  document.body.appendChild(b);
+}
 })();
 </script>
 </body>
